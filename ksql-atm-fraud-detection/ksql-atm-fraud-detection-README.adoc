@@ -1,0 +1,63 @@
+= ATM Fraud Detection with Kafka and KSQL - Hands on Guide
+Robin Moffatt <robin@confluent.io>
+v1.10, November 22, 2018
+
+== Running the test rig
+
+=== Setup
+
+[source,bash]
+----
+git clone https://github.com/confluentinc/demo-scene.git
+cd ksql-atm-fraud-detection
+docker-compose up -d
+----
+
+This brings up the stack, and also loads the necessary Kafka Connect, Elasticsearch, and Kibana configuration. It also launches the ATM data generator, streaming events to the `atm_txns_gess` topic.
+
+=== KSQL application
+
+Launch the CLI: 
+
+[source,bash]
+----
+docker-compose exec ksql-cli ksql http://ksql-server:8088
+----
+
+[source,sql]
+----
+include::atm_fraud_detection.ksql[]
+----
+
+View the resulting matches: 
+
+[source,sql]
+----
+SELECT ACCOUNT_ID, \
+        TIMESTAMPTOSTRING(T1_TIMESTAMP, 'yyyy-MM-dd HH:mm:ss'), TIMESTAMPTOSTRING(T2_TIMESTAMP, 'HH:mm:ss'), \
+        T1_ATM, T2_ATM, \
+        DISTANCE_BETWEEN_TXN_KM, MINUTES_DIFFERENCE \
+FROM ATM_POSSIBLE_FRAUD;  
+----
+
+++++
+<script src="https://asciinema.org/a/xuzkbePj2N9fsAZZew0eJUjCW.js" id="asciicast-xuzkbePj2N9fsAZZew0eJUjCW" async></script>
+++++
+
+View enriched data: 
+
+[source,sql]
+----
+SELECT ACCOUNT_ID, CUSTOMER_NAME, CUSTOMER_PHONE, \
+        TIMESTAMPTOSTRING(T1_TIMESTAMP, 'yyyy-MM-dd HH:mm:ss'), TIMESTAMPTOSTRING(T2_TIMESTAMP, 'HH:mm:ss'), \
+        T1_ATM, T2_ATM \
+FROM ATM_POSSIBLE_FRAUD_ENRICHED;
+----
+
+
+=== Kibana
+
+* http://localhost:5601/app/kibana#/dashboard/atm-transactions?_g=(refreshInterval:(pause:!f,value:30000),time:(from:now-15m,mode:quick,to:now))[All ATM transactions]
+
+* http://localhost:5601/app/kibana#/dashboard/fraudulent-atm-transactions?_g=(refreshInterval:(pause:!f,value:30000),time:(from:now-15m,mode:quick,to:now))[Possibly fraudulent transactions]
+
