@@ -1,6 +1,6 @@
-# demo-scene
+# Kafka Examples
 
-Scripts and samples to support Confluent Platform talks. May be rough around the edges. For automated tutorials and QA'd code, see https://github.com/confluentinc/examples/
+Scripts and samples to support Confluent Platform talks. For automated tutorials and QA'd code, see https://github.com/confluentinc/examples/
 
 ## Contents
 
